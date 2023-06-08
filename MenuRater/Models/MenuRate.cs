@@ -12,5 +12,6 @@ namespace MenuRater.Models
 
         [Range(1, 5)]
         public int Rating { get; set; }
+        public DateTime CreatedAt { get; internal set; }
     }
 }

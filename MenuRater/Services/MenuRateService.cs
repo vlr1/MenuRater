@@ -3,6 +3,7 @@ using MenuRater.Dtos;
 using MenuRater.Interfaces;
 using MenuRater.Models;
 using Messaging.Models;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
 namespace MenuRater.Services
@@ -19,6 +20,7 @@ namespace MenuRater.Services
             _context = context;
             _publisherFactory = publisherFactory;
         }
+
         public async Task<ServiceResponse<List<GetMenuRateDto>>> GetAllMenuRatesAsync()
         {
             try
@@ -36,11 +38,26 @@ namespace MenuRater.Services
                 if (result == null) return new ServiceResponse<List<GetMenuRateDto>>("no menus found");
 
                 var menuItems = JsonConvert.DeserializeObject<List<GetMenuRateDto>>(result);
-                var existingItems = _context.MenuRates.Where(x => menuItems)
-                await _context.AddRangeAsync(menuItems);
 
-                var addedItems = _context.MenuRates.Select(x => new GetMenuRateDto(x.Id, x.MenuName, x.Image, x.Rating));
-                
+                var menuItemIds = menuItems.Select(x => x.id);
+                var existingItems = await _context.MenuRates
+                    .Where(x => menuItemIds.Contains(x.Id))
+                    .Select(x => x.Id).ToListAsync();
+
+                var newItems = menuItems.Where(x => !existingItems.Contains(x.id)).Select(x => new MenuRate()
+                {
+                    Id = x.id,
+                    Rating = x.rating,
+                    Image = x.image,
+                    MenuName = x.image,
+                    CreatedAt = new DateTime()
+                });
+
+                await _context.AddRangeAsync(newItems);
+                await _context.SaveChangesAsync();
+
+                var allItems = await _context.MenuRates.Select(x => new GetMenuRateDto(x.Id, x.MenuName, x.Image, x.Rating)).ToListAsync();
+                return new ServiceResponse<List<GetMenuRateDto>>(allItems);                
             }
             catch (Exception ex)
             {
