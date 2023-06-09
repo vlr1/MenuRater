@@ -10,15 +10,11 @@ namespace MenuRater.Controllers
     [Route("[controller]")]
     public class MenuRateController : ControllerBase
     {
-        private readonly ILogger<MenuRateController> _logger;
         private readonly IMenuRateService _menuRateService;
-        private readonly IMapper _mapper;
 
-        public MenuRateController(ILogger<MenuRateController> logger, IMenuRateService menuRateService, IMapper mapper)
+        public MenuRateController(IMenuRateService menuRateService)
         {
-            _logger = logger;
             _menuRateService = menuRateService;
-            _mapper = mapper;
         }
 
         [HttpGet]
@@ -26,12 +22,9 @@ namespace MenuRater.Controllers
         {
             var menuRates = await _menuRateService.GetAllMenuRatesAsync();
 
-            if (menuRates.Data == null || menuRates.Data.Count == 0)
-            {
-                return NotFound(new ServiceResponse<List<ServiceResponse<GetMenuRateDto>>>("No results found"));
-            }
-
-            return Ok(new ServiceResponse<List<GetMenuRateDto>>(_mapper.Map<List<GetMenuRateDto>>(menuRates)));
+            return menuRates?.Data.Count > 0
+                ? Ok(menuRates)
+                : NotFound(menuRates);
         }
     }
 }

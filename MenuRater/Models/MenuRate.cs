@@ -8,10 +8,10 @@ namespace MenuRater.Models
 
         [Required]
         public string MenuName { get; set; }
-        public string Image { get; set; }
+        public string Description { get; set; }
 
         [Range(1, 5)]
-        public int Rating { get; set; }
-        public DateTime CreatedAt { get; internal set; }
+        public double Rating { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }

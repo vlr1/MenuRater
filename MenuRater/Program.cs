@@ -17,6 +17,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddScoped<IDataContextFactory, DataContextFactory>();
 builder.Services.AddScoped<IMenuRateService, MenuRateService>();
 builder.Services.AddHttpClient<IHttpService, HttpService>();
 builder.Services.AddSingleton<IPublisherServiceFactory, PublisherServiceFactory>();
