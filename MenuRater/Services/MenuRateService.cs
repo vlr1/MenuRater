@@ -1,15 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
-using AutoMapper;
-using MenuRater.Data;
-using MenuRater.Dtos;
+﻿using AutoMapper;
 using MenuRater.Interfaces;
 using MenuRater.Models;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+using MenuRater.Models.Dtos;
 using Newtonsoft.Json;
 
 namespace MenuRater.Services
@@ -17,14 +9,14 @@ namespace MenuRater.Services
     public class MenuRateService : IMenuRateService
     {
         private readonly ILogger<MenuRateService> _logger;
-        private readonly IDataContextFactory _dataContextFactory;
+        private readonly IMenuRateRepository _menuRateRepository;
         private readonly IPublisherServiceFactory _publisherFactory;
         private readonly IMapper _mapper;
 
-        public MenuRateService(ILogger<MenuRateService> logger, IDataContextFactory dataContextFactory, IPublisherServiceFactory publisherFactory, IMapper mapper)
+        public MenuRateService(ILogger<MenuRateService> logger, IMenuRateRepository menuRateRepository, IPublisherServiceFactory publisherFactory, IMapper mapper)
         {
             _logger = logger;
-            _dataContextFactory = dataContextFactory;
+            _menuRateRepository = menuRateRepository;
             _publisherFactory = publisherFactory;
             _mapper = mapper;
         }
@@ -35,16 +27,37 @@ namespace MenuRater.Services
             {
                 var todaysMenu = await FetchTodaysMenuAsync();
 
-                await AddNewMenus(todaysMenu);
-
-                //fetch todays menus with their ratings, some of them may exist already.
-
-                return new ServiceResponse<List<GetMenuRateDto>>(_mapper.Map<List<GetMenuRateDto>>(todaysMenu));
+                if (todaysMenu.Any()) {
+                    var updateResult = _menuRateRepository.UpdateMenuRateList(todaysMenu);
+                    return new ServiceResponse<List<GetMenuRateDto>>(_mapper.Map<List<GetMenuRateDto>>(updateResult)); 
+                }
+                return new ServiceResponse<List<GetMenuRateDto>>("No menus available for today");
             }
             catch (Exception ex)
             {
-                _logger.LogError("An error occurred while fetching menu rates", ex);
+                _logger.LogError($"An error occurred while fetching menu rates. \nException Message: {ex.Message} \nException: {ex}");
                 return new ServiceResponse<List<GetMenuRateDto>>(ex.Message);
+            }
+        }
+
+        public async Task<ServiceResponse<GetMenuRateDto>> UpdateRating(Guid menuRateId, int rating)
+        {
+            try
+            {
+                var menuRate = _menuRateRepository.Find(menuRateId);
+                if (menuRate == null) throw new InvalidOperationException("Selected menu not found, try again later");
+
+                var prevRatingsCount = menuRate.RatingsCount;
+                menuRate.RatingsCount += 1;
+                menuRate.TotalRating += rating;
+
+                var updated = _menuRateRepository.Update(menuRate, prevRatingsCount);
+                return new ServiceResponse<GetMenuRateDto>(_mapper.Map<GetMenuRateDto>(updated));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"An error occurred while fetching menu rates. \nException Message: {ex.Message} \nException: {ex}");
+                return new ServiceResponse<GetMenuRateDto>(ex.Message);
             }
         }
 
@@ -57,32 +70,24 @@ namespace MenuRater.Services
             };
 
             var sender = _publisherFactory.GetPublisher(message);
-            var httpRequestResponse = await sender.CallAsync(message);
+            var responseContent = await sender.CallAsync(message);
 
-            if (httpRequestResponse == null)
-            {
-                throw new Exception("No menus found");
-            }
+            if (responseContent == null || responseContent == string.Empty)
+                throw new ServiceUnavailableException("Menu Service did not respond back with a valid result");
 
-            return JsonConvert.DeserializeObject<List<MenuRate>>(httpRequestResponse);
+            //this converts directly to menurate db object - not great.
+            var menuRates = JsonConvert.DeserializeObject<List<MenuRate>>(responseContent);
+            return menuRates ?? throw new InvalidResponseException($"Unexpected content from response {responseContent}");
         }
+    }
 
-        //this could go into repository, so we can use the repository pattern, and the dependency to the dbContext from the service will be removed. Instead IMenuRateRepository will be added here and can be mocked easier.
-        private async Task AddNewMenus(List<MenuRate> todaysMenu)
-        {
-            using var dataContext = _dataContextFactory.Create();
+    internal class InvalidResponseException : Exception
+    {
+        public InvalidResponseException(string? message) : base(message) { }
+    }
 
-            var existingItemIds = await dataContext.MenuRates.Select(x => x.Id).ToListAsync();
-            var newMenus = todaysMenu.Where(x => !existingItemIds.Contains(x.Id));
-
-            foreach (var menu in newMenus)
-            {
-                menu.Rating = 5;
-                menu.CreatedAt = DateTime.UtcNow;
-                dataContext.MenuRates.Add(menu);
-            }
-
-            await dataContext.SaveChangesAsync();
-        }
+    internal class ServiceUnavailableException : Exception
+    {
+        public ServiceUnavailableException(string? message) : base(message) { }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace MenuRater.Dtos
+﻿namespace MenuRater.Models.Dtos
 {
     public class UpdateMenuRateDto
     {

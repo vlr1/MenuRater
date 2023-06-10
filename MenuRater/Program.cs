@@ -1,6 +1,7 @@
 using MenuRater;
 using MenuRater.Data;
 using MenuRater.Interfaces;
+using MenuRater.Repository;
 using MenuRater.Services;
 using MenuRater.Services.Http;
 using MenuRater.Services.RabbitMq;
@@ -17,7 +18,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddScoped<IDataContextFactory, DataContextFactory>();
+builder.Services.AddScoped<IMenuRateRepository, MenuRateRepository>();
 builder.Services.AddScoped<IMenuRateService, MenuRateService>();
 builder.Services.AddHttpClient<IHttpService, HttpService>();
 builder.Services.AddSingleton<IPublisherServiceFactory, PublisherServiceFactory>();

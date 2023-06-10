@@ -21,8 +21,8 @@ namespace MenuService.Controllers
         {
             return new List<Menu>() { 
                 new Menu() { Id = Guid.NewGuid(), Description = "tasty", MenuName = "pizza" },
-                new Menu() { Id = Guid.NewGuid(), Description = "tasty", MenuName = "pizza" },
-                new Menu() { Id = Guid.NewGuid(), Description = "healthy", MenuName = "broccoli" },
+                new Menu() { Id = Guid.NewGuid(), Description = "tasty", MenuName = "hamburger" },
+                new Menu() { Id = Guid.NewGuid(), Description = "healthy", MenuName = "broccoli" }
             };
         }
     }

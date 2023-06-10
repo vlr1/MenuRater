@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using MenuRater.Dtos;
 using MenuRater.Models;
+using MenuRater.Models.Dtos;
 
 namespace MenuRater
 {

@@ -11,7 +11,13 @@ namespace MenuRater.Models
         public string Description { get; set; }
 
         [Range(1, 5)]
-        public double Rating { get; set; }
+        public double TotalRating { get; set; }
         public DateTime CreatedAt { get; set; }
+        public int RatingsCount { get; set; } = 0;
+
+        public double Rating
+        {
+            get { return RatingsCount > 0 ? TotalRating / RatingsCount : 0; }
+        }
     }
 }
