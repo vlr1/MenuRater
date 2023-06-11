@@ -2,10 +2,10 @@
 
 namespace MenuRater.Services.Http
 {
-    public class HttpPublisherService : IPublisherService
+    public class HttpServiceProvider : Interfaces.IServiceProvider
     {
         private readonly IHttpService _httpClient;
-        public HttpPublisherService(IHttpService httpClient)
+        public HttpServiceProvider(IHttpService httpClient)
         {
 
             _httpClient = httpClient;

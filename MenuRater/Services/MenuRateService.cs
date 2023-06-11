@@ -10,14 +10,14 @@ namespace MenuRater.Services
     {
         private readonly ILogger<MenuRateService> _logger;
         private readonly IMenuRateRepository _menuRateRepository;
-        private readonly IPublisherServiceFactory _publisherFactory;
+        private readonly IServiceProviderFactory _serviceProviderFactory;
         private readonly IMapper _mapper;
 
-        public MenuRateService(ILogger<MenuRateService> logger, IMenuRateRepository menuRateRepository, IPublisherServiceFactory publisherFactory, IMapper mapper)
+        public MenuRateService(ILogger<MenuRateService> logger, IMenuRateRepository menuRateRepository, IServiceProviderFactory serviceProviderFactory, IMapper mapper)
         {
             _logger = logger;
             _menuRateRepository = menuRateRepository;
-            _publisherFactory = publisherFactory;
+            _serviceProviderFactory = serviceProviderFactory;
             _mapper = mapper;
         }
 
@@ -69,7 +69,7 @@ namespace MenuRater.Services
                 RequestUri = new Uri("https://localhost:7059/Menu/items")
             };
 
-            var sender = _publisherFactory.GetPublisher(message);
+            var sender = _serviceProviderFactory.GetServiceProvider(message);
             var responseContent = await sender.CallAsync(message);
 
             if (responseContent == null || responseContent == string.Empty)

@@ -1,6 +1,6 @@
 ﻿namespace MenuRater.Interfaces
 {
-    public interface IPublisherService
+    public interface IServiceProvider
     {
         Task<string> CallAsync<T>(T message);
     }

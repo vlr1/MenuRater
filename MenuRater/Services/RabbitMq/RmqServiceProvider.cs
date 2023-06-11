@@ -1,22 +1,21 @@
 ﻿using MenuRater.Interfaces;
-using Microsoft.AspNetCore.Connections;
 using Newtonsoft.Json;
 using Polly;
 using Polly.CircuitBreaker;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
-using System.Threading.Channels;
 
 namespace MenuRater.Services.RabbitMq
 {
 
-    public class RmqPublisherService : IPublisherService
+    //Oh crap! I dont have RMQ on this machine? What could I do? Use Http instead? This one can be used in future
+    public class RmqServiceProvider : Interfaces.IServiceProvider
     {
         private readonly IConnection _connection;
         private readonly IModel _channel;
         private readonly AsyncCircuitBreakerPolicy _circuitBreakerPolicy;
-        public RmqPublisherService()
+        public RmqServiceProvider()
         {
             var factory = new ConnectionFactory()
             {

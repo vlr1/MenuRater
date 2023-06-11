@@ -21,9 +21,9 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IMenuRateRepository, MenuRateRepository>();
 builder.Services.AddScoped<IMenuRateService, MenuRateService>();
 builder.Services.AddHttpClient<IHttpService, HttpService>();
-builder.Services.AddSingleton<IPublisherServiceFactory, PublisherServiceFactory>();
-builder.Services.AddTransient<RmqPublisherService>();
-builder.Services.AddTransient<HttpPublisherService>();
+builder.Services.AddSingleton<IServiceProviderFactory, ServiceProviderFactory>();
+builder.Services.AddTransient<RmqServiceProvider>();
+builder.Services.AddTransient<HttpServiceProvider>();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 var app = builder.Build();
